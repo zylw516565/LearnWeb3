@@ -42,6 +42,7 @@ contract ReferenceType {
         array4.push();
         array4.pop();
         uint array_len = array4.length;
+        uint array_len2 = array1.length;
         return array4;
     }
 
@@ -70,4 +71,13 @@ contract ReferenceType {
     function struct_demo4()external {
     student = Student({id:3, score: 300});
     }
+    //结构体可以包含应用类型, 例如包含数组, 结构体, 映射
+    struct DemoStruct{
+        uint[] array;
+        Student student;
+        mapping(uint=>uint) map_;
+    }
+    //同时结构体也可以作为数组,映射的成员
+    Student[] students;
+    mapping(uint=>Student) studentMap;
 }
