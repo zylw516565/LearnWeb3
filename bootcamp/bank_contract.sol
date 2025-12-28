@@ -3,7 +3,7 @@ pragma solidity ^0.8.31;
 
 
 contract Bank {
-    mapping(address => uint) public leger;
+    mapping(address => uint256) private balances_;
     //管理员地址
     address private immutable owner_;
 
@@ -11,9 +11,7 @@ contract Bank {
         address addr;
         uint    amount;
     }
-    SenderInfo[3] public topUsers_;
-
-    // address[3] private topUsers;
+    SenderInfo[3] private topUsers_;
 
     constructor(){
         //在合约部署时，将部署者设置为管理员
@@ -25,11 +23,11 @@ contract Bank {
 
     receive() external payable {
         emit Received(msg.sender, msg.value);
-        leger[msg.sender] += msg.value;
+        balances_[msg.sender] += msg.value;
 
         SenderInfo memory info;
         info.addr = msg.sender;
-        info.amount = leger[msg.sender];
+        info.amount = balances_[msg.sender];
 
         updateTopUsers(info);
     }
@@ -38,11 +36,11 @@ contract Bank {
 
     fallback() external payable {
         emit fallbackCalled(msg.sender, msg.value, msg.data);
-        leger[msg.sender] += msg.value;
+        balances_[msg.sender] += msg.value;
 
         SenderInfo memory info;
         info.addr = msg.sender;
-        info.amount = leger[msg.sender];
+        info.amount = balances_[msg.sender];
         updateTopUsers(info);
     }
 
@@ -75,5 +73,13 @@ contract Bank {
                 info.amount = tmpinfo.amount;
             }
         }
+    }
+
+    function getMyBalance() external view returns (uint256) {
+        return balances_[msg.sender];
+    }
+
+    function getTopDepositors() external view returns (SenderInfo[3] memory) {
+        return topUsers_;
     }
 }
