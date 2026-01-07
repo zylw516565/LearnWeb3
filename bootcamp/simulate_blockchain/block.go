@@ -1,4 +1,4 @@
-package block
+package main
 
 import (
 	"bytes"
@@ -49,4 +49,8 @@ func (bc *BlockChain) AddBlock(data string) {
 
 func NewGenesisBlock() *Block {
 	return NewBlock("GenesisBlock", []byte{})
+}
+
+func NewBlockChain() *BlockChain {
+	return &BlockChain{[]*Block{NewGenesisBlock()}}
 }
