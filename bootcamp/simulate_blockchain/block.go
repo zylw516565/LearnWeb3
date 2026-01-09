@@ -1,9 +1,6 @@
 package main
 
 import (
-	"bytes"
-	"crypto/sha256"
-	"strconv"
 	"time"
 )
 
@@ -13,6 +10,7 @@ type Block struct {
 	PrevBlockHash []byte
 	Data          []byte
 	Hash          []byte
+	Nonce         int
 }
 
 // 区块链结构
@@ -28,17 +26,16 @@ func NewBlock(data string, prevBlockHash []byte) *Block {
 		Timestamp:     time.Now().Unix(),
 		PrevBlockHash: prevBlockHash,
 		Data:          []byte(data),
+		Hash:          []byte{},
+		Nonce:         0,
 	}
 
-	newBlock.SetHash()
-	return newBlock
-}
+	pow := NewProofOfWork(newBlock)
+	nonce, hash := pow.Run()
+	newBlock.Hash = hash
+	newBlock.Nonce = nonce
 
-func (b *Block) SetHash() {
-	timestamp := strconv.FormatInt(b.Timestamp, 10)
-	headers := bytes.Join([][]byte{[]byte(timestamp), b.PrevBlockHash, b.Data}, []byte{})
-	hash := sha256.Sum256(headers)
-	b.Hash = hash[:]
+	return newBlock
 }
 
 func (bc *BlockChain) AddBlock(data string) {
