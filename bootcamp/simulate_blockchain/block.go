@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/gob"
 	"time"
 )
 
@@ -11,6 +13,14 @@ type Block struct {
 	Data          []byte
 	Hash          []byte
 	Nonce         int
+}
+
+func (b *Block) Serialize() []byte {
+	var result bytes.Buffer
+	encoder := gob.NewEncoder(&result)
+	encoder.Encode(b)
+
+	return result.Bytes()
 }
 
 // 区块链结构
