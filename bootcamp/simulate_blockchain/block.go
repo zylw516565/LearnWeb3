@@ -4,7 +4,11 @@ import (
 	"bytes"
 	"encoding/gob"
 	"time"
+
+	"github.com/boltdb/bolt"
 )
+
+const dbFile = "blockchain.db"
 
 // 区块结构
 type Block struct {
@@ -21,6 +25,14 @@ func (b *Block) Serialize() []byte {
 	encoder.Encode(b)
 
 	return result.Bytes()
+}
+
+func Deserialize(data []byte) *Block {
+	var block Block
+	decoder := gob.NewDecoder(bytes.NewReader(data))
+	decoder.Decode(&block)
+
+	return &block
 }
 
 // 区块链结构
@@ -59,5 +71,8 @@ func NewGenesisBlock() *Block {
 }
 
 func NewBlockChain() *BlockChain {
+	var tip []byte
+	db, err := bolt.Open(dbFile, 0666, nil)
 	return &BlockChain{[]*Block{NewGenesisBlock()}}
+
 }
