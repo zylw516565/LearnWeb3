@@ -3,14 +3,8 @@ package main
 import (
 	"bytes"
 	"encoding/gob"
-	"log"
 	"time"
-
-	"github.com/boltdb/bolt"
 )
-
-const dbFile = "blockchain.db"
-const BlocksBucket = "blocks"
 
 // 区块结构
 type Block struct {
@@ -37,15 +31,6 @@ func Deserialize(data []byte) *Block {
 	return &block
 }
 
-// 区块链结构
-type BlockChain struct {
-	// hash_list  [][]byte
-	// hashBlocks map[string]*Block
-
-	tip    []byte
-	blocks []*Block
-}
-
 func NewBlock(data string, prevBlockHash []byte) *Block {
 	newBlock := &Block{
 		Timestamp:     time.Now().Unix(),
@@ -63,40 +48,6 @@ func NewBlock(data string, prevBlockHash []byte) *Block {
 	return newBlock
 }
 
-func (bc *BlockChain) AddBlock(data string) {
-	preBlock := bc.blocks[len(bc.blocks)-1]
-	newBlock := NewBlock(data, preBlock.Hash)
-	bc.blocks = append(bc.blocks, newBlock)
-}
-
 func NewGenesisBlock() *Block {
 	return NewBlock("GenesisBlock", []byte{})
-}
-
-func NewBlockChain() *BlockChain {
-	var tip []byte
-	db, err := bolt.Open(dbFile, 0666, nil)
-	if err != nil {
-		log.Fatal("Open %s failed !\n", dbFile)
-	}
-
-	err = db.Update(
-		func(tx *bolt.Tx) error {
-			b := tx.Bucket([]byte(BlocksBucket))
-
-			if nil == b {
-				genesisBlock := NewGenesisBlock()
-				b, err = tx.CreateBucket([]byte(BlocksBucket))
-				b.Put(genesisBlock.Hash, genesisBlock.Serialize())
-				b.Put([]byte("l"), genesisBlock.Hash)
-
-				tip = genesisBlock.Hash
-			} else {
-				tip = b.Get([]byte("l"))
-			}
-
-			return nil
-		})
-
-	return &BlockChain{tip, []*Block{}}
 }
