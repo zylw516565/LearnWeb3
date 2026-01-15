@@ -11,6 +11,10 @@ type Transaction struct {
 	Vout []TxOutput
 }
 
+func (tx *Transaction) SetID() {
+
+}
+
 func NewUTXOTransaction(from, to string, amount int, bc *BlockChain) *Transaction {
 	var inputs []TxInput
 	var outputs []TxOutput
@@ -21,6 +25,7 @@ func NewUTXOTransaction(from, to string, amount int, bc *BlockChain) *Transactio
 		log.Panic("ERROR: Not enough funds")
 	}
 
+	// Build a list of inputs
 	for txid, outs := range validOutputs {
 		txID, _ := hex.DecodeString(txid)
 
@@ -29,5 +34,13 @@ func NewUTXOTransaction(from, to string, amount int, bc *BlockChain) *Transactio
 		}
 	}
 
-	return &Transaction{}
+	// Build a list of outputs
+	outputs = append(outputs, TxOutput{amount, to})
+	if acc > amount {
+		outputs = append(outputs, TxOutput{acc - amount, from})  //找零
+	}
+
+	tx := &Transaction{nil, inputs, outputs}
+	tx.SetID()
+	return tx
 }
