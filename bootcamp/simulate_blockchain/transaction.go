@@ -2,8 +2,11 @@ package main
 
 import (
 	"encoding/hex"
+	"fmt"
 	"log"
 )
+
+const subsidy = 10
 
 type Transaction struct {
 	ID   []byte
@@ -13,6 +16,19 @@ type Transaction struct {
 
 func (tx *Transaction) SetID() {
 
+}
+
+func NewCoinbaseTX(to, data string) *Transaction {
+	if data == "" {
+		data = fmt.Sprintf("Reward to '%s'", to)
+	}
+
+	txin := TxInput{[]byte{}, -1, data}
+	txout := TxOutput{subsidy, to}
+	tx := &Transaction{nil, []TxInput{txin}, []TxOutput{txout}}
+	tx.SetID()
+
+	return tx
 }
 
 func NewUTXOTransaction(from, to string, amount int, bc *BlockChain) *Transaction {
@@ -37,7 +53,7 @@ func NewUTXOTransaction(from, to string, amount int, bc *BlockChain) *Transactio
 	// Build a list of outputs
 	outputs = append(outputs, TxOutput{amount, to})
 	if acc > amount {
-		outputs = append(outputs, TxOutput{acc - amount, from})  //找零
+		outputs = append(outputs, TxOutput{acc - amount, from}) //找零
 	}
 
 	tx := &Transaction{nil, inputs, outputs}

@@ -10,6 +10,7 @@ import (
 type Block struct {
 	Timestamp     int64
 	PrevBlockHash []byte
+	Transactions  []*Transaction
 	Data          []byte
 	Hash          []byte
 	Nonce         int
