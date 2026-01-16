@@ -9,6 +9,8 @@ import (
 const dbFile = "blockchain.db"
 const BlocksBucket = "blocks"
 
+const genesisCoinbaseData = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks"
+
 // 区块链结构
 type BlockChain struct {
 	// hash_list  [][]byte
@@ -43,7 +45,7 @@ func (bc *BlockChain) AddBlock(data string) {
 	})
 }
 
-func NewBlockChain() *BlockChain {
+func NewBlockChain(adress string) *BlockChain {
 	var tip []byte
 	db, err := bolt.Open(dbFile, 0666, nil)
 	if err != nil {
@@ -55,7 +57,8 @@ func NewBlockChain() *BlockChain {
 			b := tx.Bucket([]byte(BlocksBucket))
 
 			if nil == b {
-				genesisBlock := NewGenesisBlock()
+				cbtx := NewCoinbaseTX(adress, genesisCoinbaseData)
+				genesisBlock := NewGenesisBlock(cbtx)
 				b, err = tx.CreateBucket([]byte(BlocksBucket))
 				b.Put(genesisBlock.Hash, genesisBlock.Serialize())
 				b.Put([]byte("l"), genesisBlock.Hash)

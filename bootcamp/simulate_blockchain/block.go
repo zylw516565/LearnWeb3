@@ -11,7 +11,6 @@ type Block struct {
 	Timestamp     int64
 	PrevBlockHash []byte
 	Transactions  []*Transaction
-	Data          []byte
 	Hash          []byte
 	Nonce         int
 }
@@ -32,11 +31,11 @@ func Deserialize(data []byte) *Block {
 	return &block
 }
 
-func NewBlock(data string, prevBlockHash []byte) *Block {
+func NewBlock(transactions []*Transaction, prevBlockHash []byte) *Block {
 	newBlock := &Block{
 		Timestamp:     time.Now().Unix(),
 		PrevBlockHash: prevBlockHash,
-		Data:          []byte(data),
+		Transactions:  transactions,
 		Hash:          []byte{},
 		Nonce:         0,
 	}
@@ -49,6 +48,6 @@ func NewBlock(data string, prevBlockHash []byte) *Block {
 	return newBlock
 }
 
-func NewGenesisBlock() *Block {
-	return NewBlock("GenesisBlock", []byte{})
+func NewGenesisBlock(coinbase *Transaction) *Block {
+	return NewBlock([]*Transaction{coinbase}, []byte{})
 }
