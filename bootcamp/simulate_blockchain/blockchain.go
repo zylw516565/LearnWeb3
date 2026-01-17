@@ -20,7 +20,7 @@ type BlockChain struct {
 	db  *bolt.DB
 }
 
-func (bc *BlockChain) AddBlock(data string) {
+func (bc *BlockChain) AddBlock(transactions []*Transaction) {
 	var preHash []byte
 	err := bc.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(BlocksBucket))
@@ -33,7 +33,7 @@ func (bc *BlockChain) AddBlock(data string) {
 		log.Fatal("db.View failed !\n")
 	}
 
-	newBlock := NewBlock(data, preHash)
+	newBlock := NewBlock(transactions, preHash)
 
 	err = bc.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(BlocksBucket))

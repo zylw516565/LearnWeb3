@@ -8,8 +8,8 @@ import (
 func main() {
 	bc := NewBlockChain("me")
 
-	bc.AddBlock("Send 1 BTC to Ivan")
-	bc.AddBlock("Send 2 more BTC to Ivan")
+	bc.AddBlock([]*Transaction{NewCoinbaseTX("Bob", "Send 1 BTC to Bob")})
+	bc.AddBlock([]*Transaction{NewCoinbaseTX("Ivan", "Send 2 more BTC to Ivan")})
 
 	bci := bc.Iterator()
 
@@ -21,7 +21,7 @@ func main() {
 		}
 
 		fmt.Printf("PrevHash: %x\n", block.PrevBlockHash)
-		fmt.Printf("Data: %s\n", block.Data)
+		fmt.Printf("Transactions: %v\n", block.Transactions)
 		fmt.Printf("Hash: %x\n", block.Hash)
 
 		//对工作量证明进行验证
