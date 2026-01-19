@@ -14,9 +14,6 @@ const genesisCoinbaseData = "The Times 03/Jan/2009 Chancellor on brink of second
 
 // 区块链结构
 type BlockChain struct {
-	// hash_list  [][]byte
-	// hashBlocks map[string]*Block
-
 	tip []byte
 	db  *bolt.DB
 }
@@ -109,4 +106,8 @@ Work:
 func (bc *BlockChain) FindUnspentTransactions(address string) []Transaction {
 	var unspentTXs []Transaction
 	return unspentTXs
+}
+
+func (bc *BlockChain) printChain() {
+
 }

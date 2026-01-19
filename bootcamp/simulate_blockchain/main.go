@@ -1,34 +1,33 @@
 package main
 
-import (
-	"fmt"
-	"strconv"
-)
-
 func main() {
 	bc := NewBlockChain("me")
+	defer bc.db.Close()
 
-	bc.AddBlock([]*Transaction{NewCoinbaseTX("Bob", "Send 1 BTC to Bob")})
-	bc.AddBlock([]*Transaction{NewCoinbaseTX("Ivan", "Send 2 more BTC to Ivan")})
+	cli := &CLI{bc}
+	cli.Run()
 
-	bci := bc.Iterator()
+	// bc.AddBlock([]*Transaction{NewCoinbaseTX("Bob", "Send 1 BTC to Bob")})
+	// bc.AddBlock([]*Transaction{NewCoinbaseTX("Ivan", "Send 2 more BTC to Ivan")})
 
-	for {
-		block := bci.Next()
+	// bci := bc.Iterator()
 
-		if len(block.PrevBlockHash) == 0 {
-			break
-		}
+	// for {
+	// 	block := bci.Next()
 
-		fmt.Printf("PrevHash: %x\n", block.PrevBlockHash)
-		fmt.Printf("Transactions: %v\n", block.Transactions)
-		fmt.Printf("Hash: %x\n", block.Hash)
+	// 	if len(block.PrevBlockHash) == 0 {
+	// 		break
+	// 	}
 
-		//对工作量证明进行验证
-		pow := NewProofOfWork(block)
-		fmt.Printf("Pow Validate %s\n", strconv.FormatBool(pow.Validate()))
-		fmt.Println()
-	}
+	// 	fmt.Printf("PrevHash: %x\n", block.PrevBlockHash)
+	// 	fmt.Printf("Transactions: %v\n", block.Transactions)
+	// 	fmt.Printf("Hash: %x\n", block.Hash)
+
+	// 	//对工作量证明进行验证
+	// 	pow := NewProofOfWork(block)
+	// 	fmt.Printf("Pow Validate %s\n", strconv.FormatBool(pow.Validate()))
+	// 	fmt.Println()
+	// }
 
 	//对工作量证明进行验证
 	// for _, block := range bc.blocks {
