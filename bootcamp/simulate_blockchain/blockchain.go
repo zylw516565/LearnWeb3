@@ -89,7 +89,7 @@ Work:
 		txID := hex.EncodeToString(tx.ID)
 
 		for outIdx, out := range tx.Vout {
-			if out.CanBeUnlockedWith(address) && accumulated < amount {
+			if out.IsLockWithKey(pubKeyHash []byte) && accumulated < amount {
 				accumulated += out.Value
 				unspentOutputs[txID] = append(unspentOutputs[txID], outIdx)
 			}

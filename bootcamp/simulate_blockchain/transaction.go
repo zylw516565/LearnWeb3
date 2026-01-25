@@ -23,9 +23,9 @@ func NewCoinbaseTX(to, data string) *Transaction {
 		data = fmt.Sprintf("Reward to '%s'", to)
 	}
 
-	txin := TxInput{[]byte{}, -1, data}
-	txout := TxOutput{subsidy, to}
-	tx := &Transaction{nil, []TxInput{txin}, []TxOutput{txout}}
+	txin := TxInput{}
+	txout := NewTXOutput(subsidy, to)
+	tx := &Transaction{nil, []TxInput{txin}, []TxOutput{*txout}}
 	tx.SetID()
 
 	return tx
@@ -34,6 +34,14 @@ func NewCoinbaseTX(to, data string) *Transaction {
 func NewUTXOTransaction(from, to string, amount int, bc *BlockChain) *Transaction {
 	var inputs []TxInput
 	var outputs []TxOutput
+
+	wallets, err := NewWallets()
+	if nil != err {
+		log.Panic(err)
+	}
+
+	wallet := wallets.GetWallet(from)
+	pubKeyHash := HashPubKey(wallet.PublicKey)
 
 	acc, validOutputs := bc.FindSpendableOutputs(from, amount)
 
@@ -51,9 +59,9 @@ func NewUTXOTransaction(from, to string, amount int, bc *BlockChain) *Transactio
 	}
 
 	// Build a list of outputs
-	outputs = append(outputs, TxOutput{amount, to})
+	outputs = append(outputs, *NewTXOutput(amount, to))
 	if acc > amount {
-		outputs = append(outputs, TxOutput{acc - amount, from}) //找零
+		outputs = append(outputs, *NewTXOutput(acc-amount, from)) //找零
 	}
 
 	tx := &Transaction{nil, inputs, outputs}

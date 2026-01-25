@@ -9,12 +9,6 @@ import (
 type TxOutput struct {
 	Value      int
 	PubKeyHash []byte
-
-	ScriptPubKey string
-}
-
-func (out *TxOutput) CanBeUnlockedWith(unlockingData string) bool {
-	return out.ScriptPubKey == unlockingData
 }
 
 func (out *TxOutput) Lock(address []byte) {
@@ -27,4 +21,12 @@ func (out *TxOutput) Lock(address []byte) {
 
 func (out *TxOutput) IsLockWithKey(pubKeyHash []byte) bool {
 	return bytes.Compare(out.PubKeyHash, pubKeyHash) == 0
+}
+
+// NewTXOutput create a new TXOutput
+func NewTXOutput(value int, address string) *TxOutput {
+	txout := TxOutput{value, nil}
+	txout.Lock([]byte(address))
+
+	return &txout
 }
