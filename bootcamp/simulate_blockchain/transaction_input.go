@@ -7,12 +7,6 @@ type TxInput struct {
 	Vout      int
 	Signature []byte
 	PubKey    []byte
-
-	ScriptSig string
-}
-
-func (in *TxInput) CanUnlockOutputWith(unlockingData string) bool {
-	return in.ScriptSig == unlockingData
 }
 
 func (in *TxInput) UsesKey(key []byte) bool {
