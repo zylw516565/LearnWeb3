@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"crypto/ecdsa"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/gob"
 	"encoding/hex"
@@ -104,10 +105,25 @@ func (tx *Transaction) Sign(privKey ecdsa.PrivateKey, prevTXs map[string]Transac
 
 	txCopy := tx.TrimmedCopy()
 
+	for inID, vin := range txCopy.Vin {
+		prevTX := prevTXs[hex.EncodeToString(vin.Txid)]
+		txCopy.Vin[inID].Signature = nil
+		txCopy.Vin[inID].PubKey = prevTX.Vout[vin.Vout].PubKeyHash
+		txCopy.ID = txCopy.Hash()
+		txCopy.Vin[inID].PubKey = nil
+
+		r, s, err := ecdsa.Sign(rand.Reader, &privKey, txCopy.ID)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		signature := append(r.Bytes(), s.Bytes()...)
+		txCopy.Vin[inID].Signature = signature
+	}
 }
 
 func (tx *Transaction) TrimmedCopy() Transaction {
-	var inputs []TxInputs
+	var inputs []TxInput
 	var outputs []TxOutput
 
 	for _, vin := range tx.Vin {

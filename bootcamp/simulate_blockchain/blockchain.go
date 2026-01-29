@@ -89,7 +89,7 @@ Work:
 		txID := hex.EncodeToString(tx.ID)
 
 		for outIdx, out := range tx.Vout {
-			if out.IsLockWithKey(pubKeyHash []byte) && accumulated < amount {
+			if out.IsLockWithKey(pubKeyHash) && accumulated < amount {
 				accumulated += out.Value
 				unspentOutputs[txID] = append(unspentOutputs[txID], outIdx)
 			}
@@ -100,7 +100,7 @@ Work:
 		}
 	}
 
-	return 0, map[string][]int{}
+	return accumulated, unspentOutputs
 }
 
 func (bc *BlockChain) FindUnspentTransactions(pubKeyHash []byte) []Transaction {
