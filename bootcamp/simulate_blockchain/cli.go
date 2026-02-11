@@ -17,6 +17,7 @@ func (cli *CLI) Run() {
 	printChainCmd := flag.NewFlagSet("printchain", flag.ExitOnError)
 	addBlockData := addBlockCmd.String("data", "", "Block data")
 	createWalletCmd := flag.NewFlagSet("createwallet", flag.ExitOnError)
+	createBlockChainCmd := flag.NewFlagSet("createblockchain", flag.ExitOnError)
 
 	switch os.Args[1] {
 	case "addblock":
@@ -35,6 +36,13 @@ func (cli *CLI) Run() {
 
 	case "createwallet":
 		err := createWalletCmd.Parse(os.Args[2:])
+		if err != nil {
+			cli.printUsage()
+			os.Exit(1)
+		}
+
+	case "createblockchain":
+		err := createBlockChainCmd.Parse(os.Args[2:])
 		if err != nil {
 			cli.printUsage()
 			os.Exit(1)
@@ -60,6 +68,10 @@ func (cli *CLI) Run() {
 
 	if createWalletCmd.Parsed() {
 		cli.createWalletCmd()
+	}
+
+	if createBlockChainCmd.Parsed() {
+		cli.createBlockChainCmd()
 	}
 
 }

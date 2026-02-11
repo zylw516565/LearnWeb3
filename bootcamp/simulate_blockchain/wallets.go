@@ -2,16 +2,24 @@ package main
 
 import (
 	"bytes"
+	"crypto/ecdsa"
 	"crypto/elliptic"
 	"encoding/gob"
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/big"
 	"os"
 )
 
 type Wallets struct {
 	Wallets map[string]*Wallet
+}
+
+type SerializableWallet struct {
+	D         *big.Int
+	X, Y      *big.Int
+	PublicKey []byte
 }
 
 func NewWallets() (*Wallets, error) {
@@ -54,28 +62,49 @@ func (ws Wallets) LoadFromFile() error {
 		log.Panic(err)
 	}
 
-	var wallets Wallets
-	gob.Register(elliptic.P256())
+	var wallets map[string]SerializableWallet
+
+	gob.Register(SerializableWallet{})
 	decoder := gob.NewDecoder(bytes.NewReader(fileContent))
 	err = decoder.Decode(&wallets)
 	if nil != err {
 		log.Panic(err)
 	}
 
-	ws.Wallets = wallets.Wallets
+	ws.Wallets = make(map[string]*Wallet)
+	for k, v := range wallets {
+		ws.Wallets[k] = &Wallet{
+			PrivateKey: ecdsa.PrivateKey{
+				PublicKey: ecdsa.PublicKey{
+					Curve: elliptic.P256(),
+					X:     v.X,
+					Y:     v.Y,
+				},
+				D: v.D,
+			},
+			PublicKey: v.PublicKey,
+		}
+	}
+
 	return nil
 }
 
 func (ws Wallets) SaveToFile() error {
-	if _, err := os.Stat(walletFile); os.IsNotExist(err) {
-		return err
+	var content bytes.Buffer
+	gob.Register(SerializableWallet{})
+
+	wallets := make(map[string]SerializableWallet)
+	for k, v := range ws.Wallets {
+		wallets[k] = SerializableWallet{
+			v.PrivateKey.D,
+			v.PrivateKey.X,
+			v.PrivateKey.Y,
+			v.PublicKey,
+		}
 	}
 
-	var content bytes.Buffer
-
-	gob.Register(elliptic.P256())
 	encoder := gob.NewEncoder(&content)
-	err := encoder.Encode(ws.Wallets)
+	err := encoder.Encode(wallets)
 	if nil != err {
 		log.Panic(err)
 	}

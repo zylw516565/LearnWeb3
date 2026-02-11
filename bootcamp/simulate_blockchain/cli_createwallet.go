@@ -1,11 +1,17 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+)
 
 func (cli *CLI) createWalletCmd() {
 	wallets, _ := NewWallets()
 	address := wallets.CreateWallet()
-	wallets.SaveToFile()
+	err := wallets.SaveToFile()
+	if nil != err {
+		log.Panic(err)
+	}
 
 	fmt.Printf("Your new addres is %s\n", address)
 }
