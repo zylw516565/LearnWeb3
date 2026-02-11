@@ -18,6 +18,7 @@ func (cli *CLI) Run() {
 	addBlockData := addBlockCmd.String("data", "", "Block data")
 	createWalletCmd := flag.NewFlagSet("createwallet", flag.ExitOnError)
 	createBlockChainCmd := flag.NewFlagSet("createblockchain", flag.ExitOnError)
+	addressData := createBlockChainCmd.String("address", "", "address")
 
 	switch os.Args[1] {
 	case "addblock":
@@ -71,7 +72,12 @@ func (cli *CLI) Run() {
 	}
 
 	if createBlockChainCmd.Parsed() {
-		cli.createBlockChainCmd()
+		if "" == *addressData {
+			createBlockChainCmd.Usage()
+			os.Exit(1)
+		}
+
+		cli.createBlockChainCmd(*addressData)
 	}
 
 }
