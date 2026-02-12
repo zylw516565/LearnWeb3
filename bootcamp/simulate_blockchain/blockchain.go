@@ -5,7 +5,9 @@ import (
 	"crypto/ecdsa"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"log"
+	"os"
 
 	"github.com/boltdb/bolt"
 )
@@ -46,33 +48,74 @@ func (bc *BlockChain) AddBlock(transactions []*Transaction) {
 	})
 }
 
-func NewBlockChain(adress string) *BlockChain {
+func CreateBlockchain(address string) *BlockChain {
+	if dbExists() {
+		fmt.Println("Blockchain already exists.")
+		os.Exit(1)
+	}
+
+	cbtx := NewCoinbaseTX(address, genesisCoinbaseData)
+	genesisBlock := NewGenesisBlock(cbtx)
+
 	var tip []byte
 	db, err := bolt.Open(dbFile, 0666, nil)
 	if err != nil {
 		log.Fatal("Open %s failed !\n", dbFile)
 	}
 
-	err = db.Update(
-		func(tx *bolt.Tx) error {
-			b := tx.Bucket([]byte(BlocksBucket))
+	err = db.Update(func(tx *bolt.Tx) error {
+		b, err := tx.CreateBucket([]byte(BlocksBucket))
+		if nil != err {
+			log.Panic(err)
+		}
 
-			if nil == b {
-				cbtx := NewCoinbaseTX(adress, genesisCoinbaseData)
-				genesisBlock := NewGenesisBlock(cbtx)
-				b, err = tx.CreateBucket([]byte(BlocksBucket))
-				b.Put(genesisBlock.Hash, genesisBlock.Serialize())
-				b.Put([]byte("l"), genesisBlock.Hash)
+		err = b.Put(genesisBlock.Hash, genesisBlock.Serialize())
+		if nil != err {
+			log.Panic(err)
+		}
 
-				tip = genesisBlock.Hash
-			} else {
-				tip = b.Get([]byte("l"))
-			}
+		err = b.Put([]byte("l"), genesisBlock.Hash)
+		if nil != err {
+			log.Panic(err)
+		}
 
-			return nil
-		})
+		tip = genesisBlock.Hash
+		return nil
+	})
+
+	if nil != err {
+		log.Panic(err)
+	}
 
 	return &BlockChain{tip, db}
+}
+
+// NewBlockchain creates a new Blockchain with genesis Block
+func NewBlockchain(address string) *BlockChain {
+	if dbExists() == false {
+		fmt.Println("No existing blockchain found. Create one first.")
+		os.Exit(1)
+	}
+
+	var tip []byte
+	db, err := bolt.Open(dbFile, 0600, nil)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	err = db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(BlocksBucket))
+		tip = b.Get([]byte("l"))
+
+		return nil
+	})
+	if err != nil {
+		log.Panic(err)
+	}
+
+	bc := BlockChain{tip, db}
+
+	return &bc
 }
 
 // Iterator returns a BlockchainIterat
@@ -164,4 +207,12 @@ func (bc *BlockChain) VerifyTransaction(tx *Transaction) bool {
 	}
 
 	return tx.Verify(prevTXs)
+}
+
+func dbExists() bool {
+	if _, err := os.Stat(dbFile); os.IsNotExist(err) {
+		return false
+	}
+
+	return true
 }

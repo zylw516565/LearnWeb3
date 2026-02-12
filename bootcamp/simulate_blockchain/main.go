@@ -1,10 +1,7 @@
 package main
 
 func main() {
-	bc := NewBlockChain("me")
-	defer bc.db.Close()
-
-	cli := &CLI{bc}
+	cli := &CLI{}
 	cli.Run()
 
 	// bc.AddBlock([]*Transaction{NewCoinbaseTX("Bob", "Send 1 BTC to Bob")})
