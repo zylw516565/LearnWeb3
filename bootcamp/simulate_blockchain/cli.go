@@ -18,6 +18,8 @@ func (cli *CLI) Run() {
 	createWalletCmd := flag.NewFlagSet("createwallet", flag.ExitOnError)
 	createBlockChainCmd := flag.NewFlagSet("createblockchain", flag.ExitOnError)
 	addressData := createBlockChainCmd.String("address", "", "address")
+	getBalanceCmd := flag.NewFlagSet("getbalance", flag.ExitOnError)
+	addressGetBalance := getBalanceCmd.String("address", "", "address")
 
 	switch os.Args[1] {
 	case "addblock":
@@ -43,6 +45,13 @@ func (cli *CLI) Run() {
 
 	case "createblockchain":
 		err := createBlockChainCmd.Parse(os.Args[2:])
+		if err != nil {
+			cli.printUsage()
+			os.Exit(1)
+		}
+
+	case "getbalance":
+		err := getBalanceCmd.Parse(os.Args[2:])
 		if err != nil {
 			cli.printUsage()
 			os.Exit(1)
@@ -77,6 +86,15 @@ func (cli *CLI) Run() {
 		}
 
 		cli.createBlockChainCmd(*addressData)
+	}
+
+	if getBalanceCmd.Parsed() {
+		if "" == *addressGetBalance {
+			getBalanceCmd.Usage()
+			os.Exit(1)
+		}
+
+		cli.getBalance(*addressGetBalance)
 	}
 
 }
