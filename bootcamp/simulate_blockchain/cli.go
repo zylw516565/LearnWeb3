@@ -20,6 +20,7 @@ func (cli *CLI) Run() {
 	addressData := createBlockChainCmd.String("address", "", "address")
 	getBalanceCmd := flag.NewFlagSet("getbalance", flag.ExitOnError)
 	addressGetBalance := getBalanceCmd.String("address", "", "address")
+	listAddressCmd := flag.NewFlagSet("listaddress", flag.ExitOnError)
 
 	switch os.Args[1] {
 	case "addblock":
@@ -52,6 +53,13 @@ func (cli *CLI) Run() {
 
 	case "getbalance":
 		err := getBalanceCmd.Parse(os.Args[2:])
+		if err != nil {
+			cli.printUsage()
+			os.Exit(1)
+		}
+
+	case "listaddress":
+		err := listAddressCmd.Parse(os.Args[2:])
 		if err != nil {
 			cli.printUsage()
 			os.Exit(1)
@@ -95,6 +103,10 @@ func (cli *CLI) Run() {
 		}
 
 		cli.getBalance(*addressGetBalance)
+	}
+
+	if listAddressCmd.Parsed() {
+		cli.listAddressCmd()
 	}
 
 }

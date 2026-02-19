@@ -71,7 +71,6 @@ func (ws Wallets) LoadFromFile() error {
 		log.Panic(err)
 	}
 
-	ws.Wallets = make(map[string]*Wallet)
 	for k, v := range wallets {
 		ws.Wallets[k] = &Wallet{
 			PrivateKey: ecdsa.PrivateKey{
