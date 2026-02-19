@@ -21,6 +21,10 @@ func (cli *CLI) Run() {
 	getBalanceCmd := flag.NewFlagSet("getbalance", flag.ExitOnError)
 	addressGetBalance := getBalanceCmd.String("address", "", "address")
 	listAddressCmd := flag.NewFlagSet("listaddress", flag.ExitOnError)
+	sendCmd := flag.NewFlagSet("send", flag.ExitOnError)
+	from := sendCmd.String("from", "", "from")
+	to := sendCmd.String("to", "", "to")
+	amount := sendCmd.Int("amount", 0, "amount")
 
 	switch os.Args[1] {
 	case "addblock":
@@ -60,6 +64,13 @@ func (cli *CLI) Run() {
 
 	case "listaddress":
 		err := listAddressCmd.Parse(os.Args[2:])
+		if err != nil {
+			cli.printUsage()
+			os.Exit(1)
+		}
+
+	case "send":
+		err := sendCmd.Parse(os.Args[2:])
 		if err != nil {
 			cli.printUsage()
 			os.Exit(1)
@@ -107,6 +118,15 @@ func (cli *CLI) Run() {
 
 	if listAddressCmd.Parsed() {
 		cli.listAddressCmd()
+	}
+
+	if sendCmd.Parsed() {
+		if "" == *from || "" == *to || 0 == *amount {
+			sendCmd.Usage()
+			os.Exit(1)
+		}
+
+		cli.sendCmd(*from, *to, *amount)
 	}
 
 }
