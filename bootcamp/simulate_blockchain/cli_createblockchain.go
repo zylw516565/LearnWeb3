@@ -5,12 +5,12 @@ import (
 	"log"
 )
 
-func (cli *CLI) createBlockChainCmd(address string) {
+func (cli *CLI) createBlockChainCmd(address, nodeID string) {
 	if !ValidateAddress(address) {
 		log.Panic("ERROR: Address is not valid")
 	}
 
-	bc := CreateBlockchain(address)
+	bc := CreateBlockchain(address, nodeID)
 	bc.db.Close()
 	fmt.Println("Done!")
 }

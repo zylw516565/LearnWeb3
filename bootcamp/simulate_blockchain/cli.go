@@ -12,6 +12,12 @@ type CLI struct {
 func (cli *CLI) Run() {
 	cli.validateArgs()
 
+	nodeID := os.Getenv("NODE_ID")
+	if nodeID == "" {
+		fmt.Printf("NODE_ID env. var is not set!")
+		os.Exit(1)
+	}
+
 	printChainCmd := flag.NewFlagSet("printchain", flag.ExitOnError)
 	createWalletCmd := flag.NewFlagSet("createwallet", flag.ExitOnError)
 	createBlockChainCmd := flag.NewFlagSet("createblockchain", flag.ExitOnError)
@@ -86,7 +92,7 @@ func (cli *CLI) Run() {
 			os.Exit(1)
 		}
 
-		cli.createBlockChainCmd(*addressData)
+		cli.createBlockChainCmd(*addressData, nodeID)
 	}
 
 	if getBalanceCmd.Parsed() {
