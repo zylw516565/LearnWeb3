@@ -23,31 +23,6 @@ type BlockChain struct {
 	db  *bolt.DB
 }
 
-func (bc *BlockChain) AddBlock(transactions []*Transaction) {
-	var preHash []byte
-	err := bc.db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(BlocksBucket))
-		preHash = b.Get([]byte("l"))
-
-		return nil
-	})
-
-	if err != nil {
-		log.Fatal("db.View failed !\n")
-	}
-
-	newBlock := NewBlock(transactions, preHash)
-
-	err = bc.db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(BlocksBucket))
-		b.Put([]byte("l"), newBlock.Hash)
-		b.Put(newBlock.Hash, newBlock.Serialize())
-		bc.tip = newBlock.Hash
-
-		return nil
-	})
-}
-
 func CreateBlockchain(address string) *BlockChain {
 	if dbExists() {
 		fmt.Println("Blockchain already exists.")

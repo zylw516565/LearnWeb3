@@ -3,33 +3,4 @@ package main
 func main() {
 	cli := &CLI{}
 	cli.Run()
-
-	// bc.AddBlock([]*Transaction{NewCoinbaseTX("Bob", "Send 1 BTC to Bob")})
-	// bc.AddBlock([]*Transaction{NewCoinbaseTX("Ivan", "Send 2 more BTC to Ivan")})
-
-	// bci := bc.Iterator()
-
-	// for {
-	// 	block := bci.Next()
-
-	// 	if len(block.PrevBlockHash) == 0 {
-	// 		break
-	// 	}
-
-	// 	fmt.Printf("PrevHash: %x\n", block.PrevBlockHash)
-	// 	fmt.Printf("Transactions: %v\n", block.Transactions)
-	// 	fmt.Printf("Hash: %x\n", block.Hash)
-
-	// 	//对工作量证明进行验证
-	// 	pow := NewProofOfWork(block)
-	// 	fmt.Printf("Pow Validate %s\n", strconv.FormatBool(pow.Validate()))
-	// 	fmt.Println()
-	// }
-
-	//对工作量证明进行验证
-	// for _, block := range bc.blocks {
-	// 	pow := NewProofOfWork(block)
-
-	// 	fmt.Printf("", pow.Validate())
-	// }
 }

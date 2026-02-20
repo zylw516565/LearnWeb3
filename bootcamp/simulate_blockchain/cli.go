@@ -12,9 +12,7 @@ type CLI struct {
 func (cli *CLI) Run() {
 	cli.validateArgs()
 
-	addBlockCmd := flag.NewFlagSet("addblock", flag.ExitOnError)
 	printChainCmd := flag.NewFlagSet("printchain", flag.ExitOnError)
-	addBlockData := addBlockCmd.String("data", "", "Block data")
 	createWalletCmd := flag.NewFlagSet("createwallet", flag.ExitOnError)
 	createBlockChainCmd := flag.NewFlagSet("createblockchain", flag.ExitOnError)
 	addressData := createBlockChainCmd.String("address", "", "address")
@@ -27,13 +25,6 @@ func (cli *CLI) Run() {
 	amount := sendCmd.Int("amount", 0, "amount")
 
 	switch os.Args[1] {
-	case "addblock":
-		err := addBlockCmd.Parse(os.Args[2:])
-		if err != nil {
-			cli.printUsage()
-			os.Exit(1)
-		}
-
 	case "printchain":
 		err := printChainCmd.Parse(os.Args[2:])
 		if err != nil {
@@ -79,15 +70,6 @@ func (cli *CLI) Run() {
 	default:
 		cli.printUsage()
 		os.Exit(1)
-	}
-
-	if addBlockCmd.Parsed() {
-		if "" == *addBlockData {
-			addBlockCmd.Usage()
-			os.Exit(1)
-		}
-
-		// cli.AddBlock(*addBlockData)
 	}
 
 	if printChainCmd.Parsed() {
@@ -141,9 +123,4 @@ func (cli *CLI) validateArgs() {
 func (cli *CLI) printUsage() {
 	fmt.Println("  addblock - Addblock to the blockchain, --data with data")
 	fmt.Println("  printchain - Print all the blocks of the blockchain")
-}
-
-func (cli *CLI) addBlock(data string) {
-	// cli.bc.AddBlock(data)
-	fmt.Println("Success!")
 }
