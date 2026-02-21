@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/gob"
+	"log"
 	"time"
 )
 
@@ -14,6 +15,7 @@ type Block struct {
 	Transactions  []*Transaction
 	Hash          []byte
 	Nonce         int
+	Height        int
 }
 
 func (b *Block) Serialize() []byte {
@@ -39,18 +41,22 @@ func (b *Block) HashTransactions() []byte {
 func Deserialize(data []byte) *Block {
 	var block Block
 	decoder := gob.NewDecoder(bytes.NewReader(data))
-	decoder.Decode(&block)
+	err := decoder.Decode(&block)
+	if err != nil {
+		log.Panic(err)
+	}
 
 	return &block
 }
 
-func NewBlock(transactions []*Transaction, prevBlockHash []byte) *Block {
+func NewBlock(transactions []*Transaction, prevBlockHash []byte, height int) *Block {
 	newBlock := &Block{
 		Timestamp:     time.Now().Unix(),
 		PrevBlockHash: prevBlockHash,
 		Transactions:  transactions,
 		Hash:          []byte{},
 		Nonce:         0,
+		Height:        height,
 	}
 
 	pow := NewProofOfWork(newBlock)
@@ -62,5 +68,5 @@ func NewBlock(transactions []*Transaction, prevBlockHash []byte) *Block {
 }
 
 func NewGenesisBlock(coinbase *Transaction) *Block {
-	return NewBlock([]*Transaction{coinbase}, []byte{})
+	return NewBlock([]*Transaction{coinbase}, []byte{}, 0)
 }

@@ -95,6 +95,41 @@ func NewBlockchain(nodeID string) *BlockChain {
 	return &bc
 }
 
+// AddBlock saves the block into the blockchain
+func (bc *BlockChain) AddBlock(block *Block) {
+	err := bc.db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(BlocksBucket))
+		blockInDb := b.Get(block.Hash)
+
+		if blockInDb != nil {
+			return nil
+		}
+
+		blockData := block.Serialize()
+		err := b.Put(block.Hash, blockData)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		lastHash := b.Get([]byte("l"))
+		lastBlockData := b.Get(lastHash)
+		lastBlock := Deserialize(lastBlockData)
+		if block.Height > lastBlock.Height {
+			err := b.Put([]byte("l"), block.Hash)
+			if err != nil {
+				log.Panic(err)
+			}
+			bc.tip = block.Hash
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		log.Panic(err)
+	}
+}
+
 // Iterator returns a BlockchainIterat
 func (bc *BlockChain) Iterator() *BlockchainIterator {
 	bci := &BlockchainIterator{bc.tip, bc.db}
@@ -248,6 +283,7 @@ func dbExists(dbFile string) bool {
 // MineBlock mines a new block with the provided transactions
 func (bc *BlockChain) MineBlock(transactions []*Transaction) {
 	var lastHash []byte
+	var lastHeight int
 	for _, tx := range transactions {
 		if !bc.VerifyTransaction(tx) {
 			log.Panic("ERROR: Invalid transaction")
@@ -257,14 +293,17 @@ func (bc *BlockChain) MineBlock(transactions []*Transaction) {
 	err := bc.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(BlocksBucket))
 		lastHash = b.Get([]byte("l"))
+		lastBlockData := b.Get(lastHash)
+		lastBlock := Deserialize(lastBlockData)
 
+		lastHeight = lastBlock.Height
 		return nil
 	})
 	if err != nil {
 		log.Panic(err)
 	}
 
-	newBlock := NewBlock(transactions, lastHash)
+	newBlock := NewBlock(transactions, lastHash, lastHeight)
 
 	err = bc.db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(BlocksBucket))
@@ -285,4 +324,22 @@ func (bc *BlockChain) MineBlock(transactions []*Transaction) {
 	if err != nil {
 		log.Panic(err)
 	}
+}
+
+func (bc *BlockChain) GetBestHeight() int {
+	var bestHeight int
+	err := bc.db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(BlocksBucket))
+		lastHash := b.Get([]byte("l"))
+		lastBlockData := b.Get(lastHash)
+		lastBlock := Deserialize(lastBlockData)
+
+		bestHeight = lastBlock.Height
+		return nil
+	})
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return bestHeight
 }
