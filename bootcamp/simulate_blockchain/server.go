@@ -20,32 +20,18 @@ type version struct {
 	AddrFrom   string
 }
 
+type getblocks struct {
+	AddrFrom string
+}
+
+type inv struct {
+	AddrFrom string
+	Type     string
+	Items    [][]byte
+}
+
 var nodeAddress string
 var knownNodes = []string{"localhost:3000"}
-
-func StartServer(nodeID, minerAddress string) {
-	nodeAddress = fmt.Sprintf("localhost:%s", nodeID)
-	ln, err := net.Listen(protocol, nodeAddress)
-	if err != nil {
-		log.Panic(err)
-	}
-	defer ln.Close()
-
-	bc := NewBlockchain(nodeID)
-
-	if nodeAddress != knownNodes[0] {
-		sendVersion(knownNodes[0], bc)
-	}
-
-	for {
-		conn, err := ln.Accept()
-		if err != nil {
-			log.Panic(err)
-		}
-
-		go handleConnection(conn, bc)
-	}
-}
 
 func sendVersion(addr string, bc *BlockChain) {
 	bestHeight := bc.GetBestHeight()
@@ -53,6 +39,20 @@ func sendVersion(addr string, bc *BlockChain) {
 	request := append(commandToBytes("version"), payload...)
 
 	sendData(addr, request)
+}
+
+func sendGetBlocks(addr string) {
+	payload := gobEncode(getblocks{nodeAddress})
+	request := append(commandToBytes("getblocks"), payload...)
+
+	sendData(addr, request)
+}
+
+func sendInv(address, kind string, items [][]byte) {
+	payload := gobEncode(inv{nodeAddress, kind, items})
+	request := append(commandToBytes("inv"), payload...)
+
+	sendData(address, request)
 }
 
 func handleConnection(conn net.Conn, bc *BlockChain) {
@@ -66,10 +66,86 @@ func handleConnection(conn net.Conn, bc *BlockChain) {
 
 	switch command {
 	case "version":
+		handleVersion(request, bc)
+	case "getblocks":
+		handleGetBlocks(request, bc)
+	case "inv":
+		handleInv(request, bc)
 
 	default:
+		fmt.Println("Unknown command!")
 	}
 
+}
+
+func handleInv(request []byte, bc *BlockChain) {
+	var buff bytes.Buffer
+	var payload inv
+
+	buff.Write(request[commandLength:])
+	decoder := gob.NewDecoder(&buff)
+	err := decoder.Decode(&payload)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	fmt.Printf("Recevied inventory with %d %s\n", len(payload.Items), payload.Type)
+
+	if "block" == payload.Type {
+
+	} else if "tx" == payload.Type {
+
+	}
+
+}
+
+func handleVersion(request []byte, bc *BlockChain) {
+	var buff bytes.Buffer
+	var payload version
+
+	buff.Write(request[commandLength:])
+	decoder := gob.NewDecoder(&buff)
+	err := decoder.Decode(&payload)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	myBestHeight := bc.GetBestHeight()
+
+	if myBestHeight > payload.BestHeight {
+		sendVersion(payload.AddrFrom, bc)
+	} else if myBestHeight < payload.BestHeight {
+		sendGetBlocks(payload.AddrFrom)
+	}
+
+	if !nodeIsKnown(payload.AddrFrom) {
+		knownNodes = append(knownNodes, payload.AddrFrom)
+	}
+}
+
+func handleGetBlocks(request []byte, bc *BlockChain) {
+	var buff bytes.Buffer
+	var payload getblocks
+
+	buff.Write(request[commandLength:])
+	decoder := gob.NewDecoder(&buff)
+	err := decoder.Decode(&payload)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	blocks := bc.GetBlockHashes()
+	sendInv(payload.AddrFrom, "block", blocks)
+}
+
+func nodeIsKnown(addr string) bool {
+	for _, node := range knownNodes {
+		if node == addr {
+			return true
+		}
+	}
+
+	return false
 }
 
 func sendData(addr string, data []byte) {
@@ -126,4 +202,28 @@ func bytesToCommand(bytes []byte) string {
 	}
 
 	return fmt.Sprintf("%s", command)
+}
+
+func StartServer(nodeID, minerAddress string) {
+	nodeAddress = fmt.Sprintf("localhost:%s", nodeID)
+	ln, err := net.Listen(protocol, nodeAddress)
+	if err != nil {
+		log.Panic(err)
+	}
+	defer ln.Close()
+
+	bc := NewBlockchain(nodeID)
+
+	if nodeAddress != knownNodes[0] {
+		sendVersion(knownNodes[0], bc)
+	}
+
+	for {
+		conn, err := ln.Accept()
+		if err != nil {
+			log.Panic(err)
+		}
+
+		go handleConnection(conn, bc)
+	}
 }
