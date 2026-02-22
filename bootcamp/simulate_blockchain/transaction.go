@@ -32,6 +32,19 @@ func (tx Transaction) Serialize() []byte {
 	return encoded.Bytes()
 }
 
+// DeserializeTransaction deserializes a transaction
+func DeserializeTransaction(data []byte) Transaction {
+	var transaction Transaction
+
+	decoder := gob.NewDecoder(bytes.NewReader(data))
+	err := decoder.Decode(&transaction)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return transaction
+}
+
 func (tx *Transaction) Hash() []byte {
 	txCopy := *tx
 	txCopy.ID = []byte{}

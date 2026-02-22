@@ -281,7 +281,7 @@ func dbExists(dbFile string) bool {
 }
 
 // MineBlock mines a new block with the provided transactions
-func (bc *BlockChain) MineBlock(transactions []*Transaction) {
+func (bc *BlockChain) MineBlock(transactions []*Transaction) *Block {
 	var lastHash []byte
 	var lastHeight int
 	for _, tx := range transactions {
@@ -324,6 +324,8 @@ func (bc *BlockChain) MineBlock(transactions []*Transaction) {
 	if err != nil {
 		log.Panic(err)
 	}
+
+	return newBlock
 }
 
 func (bc *BlockChain) GetBestHeight() int {
@@ -359,4 +361,24 @@ func (bc *BlockChain) GetBlockHashes() [][]byte {
 	}
 
 	return blocks
+}
+
+func (bc *BlockChain) GetBlock(blockHash []byte) (Block, error) {
+	var block Block
+	err := bc.db.View(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(BlocksBucket))
+		encodedBlock := b.Get(blockHash)
+		if encodedBlock == nil {
+			return errors.New("Block is not found.")
+		}
+
+		block = *Deserialize(encodedBlock)
+
+		return nil
+	})
+	if err != nil {
+		return block, err
+	}
+
+	return block, nil
 }
