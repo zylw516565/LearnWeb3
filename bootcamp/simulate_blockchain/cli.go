@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -29,6 +30,10 @@ func (cli *CLI) Run() {
 	from := sendCmd.String("from", "", "from")
 	to := sendCmd.String("to", "", "to")
 	amount := sendCmd.Int("amount", 0, "amount")
+	sendMine := sendCmd.Bool("mine", false, "Mine immediately on the same node")
+
+	startNodeCmd := flag.NewFlagSet("startnode", flag.ExitOnError)
+	startNodeMiner := startNodeCmd.String("miner", "", "Enable mining mode and send reward to ADDRESS")
 
 	switch os.Args[1] {
 	case "printchain":
@@ -72,7 +77,11 @@ func (cli *CLI) Run() {
 			cli.printUsage()
 			os.Exit(1)
 		}
-
+	case "startnode":
+		err := startNodeCmd.Parse(os.Args[2:])
+		if err != nil {
+			log.Panic(err)
+		}
 	default:
 		cli.printUsage()
 		os.Exit(1)
@@ -109,14 +118,22 @@ func (cli *CLI) Run() {
 	}
 
 	if sendCmd.Parsed() {
-		if "" == *from || "" == *to || 0 == *amount {
+		if "" == *from || "" == *to || 0 <= *amount {
 			sendCmd.Usage()
 			os.Exit(1)
 		}
 
-		cli.sendCmd(*from, *to, *amount)
+		cli.sendCmd(*from, *to, *amount, *sendMine)
 	}
 
+	if startNodeCmd.Parsed() {
+		nodeID := os.Getenv("NODE_ID")
+		if nodeID == "" {
+			startNodeCmd.Usage()
+			os.Exit(1)
+		}
+		cli.startNode(nodeID, *startNodeMiner)
+	}
 }
 
 func (cli *CLI) validateArgs() {
