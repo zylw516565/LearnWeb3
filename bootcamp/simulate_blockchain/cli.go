@@ -23,16 +23,16 @@ func (cli *CLI) Run() {
 	printChainCmd := flag.NewFlagSet("printchain", flag.ExitOnError)
 	createWalletCmd := flag.NewFlagSet("createwallet", flag.ExitOnError)
 	createBlockChainCmd := flag.NewFlagSet("createblockchain", flag.ExitOnError)
-	addressData := createBlockChainCmd.String("address", "", "address")
 	getBalanceCmd := flag.NewFlagSet("getbalance", flag.ExitOnError)
-	addressGetBalance := getBalanceCmd.String("address", "", "address")
 	listAddressCmd := flag.NewFlagSet("listaddress", flag.ExitOnError)
 	sendCmd := flag.NewFlagSet("send", flag.ExitOnError)
+
+	addressData := createBlockChainCmd.String("address", "", "address")
+	addressGetBalance := getBalanceCmd.String("address", "", "address")
 	from := sendCmd.String("from", "", "from")
 	to := sendCmd.String("to", "", "to")
 	amount := sendCmd.Int("amount", 0, "amount")
 	sendMine := sendCmd.Bool("mine", false, "Mine immediately on the same node")
-
 	startNodeCmd := flag.NewFlagSet("startnode", flag.ExitOnError)
 	startNodeMiner := startNodeCmd.String("miner", "", "Enable mining mode and send reward to ADDRESS")
 
@@ -89,11 +89,11 @@ func (cli *CLI) Run() {
 	}
 
 	if printChainCmd.Parsed() {
-		cli.printChain()
+		cli.printChain(nodeID)
 	}
 
 	if createWalletCmd.Parsed() {
-		cli.createWalletCmd()
+		cli.createWalletCmd(nodeID)
 	}
 
 	if createBlockChainCmd.Parsed() {
@@ -111,11 +111,11 @@ func (cli *CLI) Run() {
 			os.Exit(1)
 		}
 
-		cli.getBalance(*addressGetBalance)
+		cli.getBalance(*addressGetBalance, nodeID)
 	}
 
 	if listAddressCmd.Parsed() {
-		cli.listAddressCmd()
+		cli.listAddressCmd(nodeID)
 	}
 
 	if sendCmd.Parsed() {
@@ -124,7 +124,7 @@ func (cli *CLI) Run() {
 			os.Exit(1)
 		}
 
-		cli.sendCmd(*from, *to, *amount, *sendMine)
+		cli.sendCmd(*from, *to, *amount, nodeID, *sendMine)
 	}
 
 	if startNodeCmd.Parsed() {
@@ -149,7 +149,7 @@ func (cli *CLI) printUsage() {
 	fmt.Println("  createblockchain -address ADDRESS - Create a blockchain and send genesis block reward to ADDRESS")
 	fmt.Println("  createwallet - Generates a new key-pair and saves it into the wallet file")
 	fmt.Println("  getbalance -address ADDRESS - Get balance of ADDRESS")
-	fmt.Println("  listaddresses - Lists all addresses from the wallet file")
+	fmt.Println("  listaddress - Lists all addresses from the wallet file")
 	fmt.Println("  printchain - Print all the blocks of the blockchain")
 	fmt.Println("  reindexutxo - Rebuilds the UTXO set")
 	fmt.Println("  send -from FROM -to TO -amount AMOUNT -mine - Send AMOUNT of coins from FROM address to TO. Mine on the same node, when -mine is set.")

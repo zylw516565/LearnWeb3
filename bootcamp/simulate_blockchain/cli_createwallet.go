@@ -5,10 +5,10 @@ import (
 	"log"
 )
 
-func (cli *CLI) createWalletCmd() {
-	wallets, _ := NewWallets()
+func (cli *CLI) createWalletCmd(nodeID string) {
+	wallets, _ := NewWallets(nodeID)
 	address := wallets.CreateWallet()
-	err := wallets.SaveToFile()
+	err := wallets.SaveToFile(nodeID)
 	if nil != err {
 		log.Panic(err)
 	}

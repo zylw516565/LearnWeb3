@@ -7,12 +7,12 @@ import (
 	"github.com/btcsuite/btcutil/base58"
 )
 
-func (cli *CLI) getBalance(address string) {
+func (cli *CLI) getBalance(address, nodeID string) {
 	if !ValidateAddress(address) {
 		log.Panic("ERROR: Address is not valid")
 	}
 
-	bc := NewBlockchain(address)
+	bc := NewBlockchain(nodeID)
 	defer bc.db.Close()
 
 	pubKeyHash := base58.Decode(address)

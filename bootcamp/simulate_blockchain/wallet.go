@@ -13,7 +13,6 @@ import (
 
 const (
 	Verion             = byte(0x00)
-	walletFile         = "wallet.dat"
 	addressChecksumLen = 4
 )
 
