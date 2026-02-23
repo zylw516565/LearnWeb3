@@ -207,8 +207,8 @@ func (bc *BlockChain) FindUnspentTransactions(pubKeyHash []byte) []Transaction {
 	return unspentTXs
 }
 
-func (bc *BlockChain) FindUTXO(pubKeyHash []byte) []TxOutput {
-	var UTXOs []TxOutput
+func (bc *BlockChain) FindUTXO(pubKeyHash []byte) []TXOutput {
+	var UTXOs []TXOutput
 	unspentTransactions := bc.FindUnspentTransactions(pubKeyHash)
 	for _, tx := range unspentTransactions {
 		for _, out := range tx.Vout {
