@@ -119,7 +119,7 @@ func (cli *CLI) Run() {
 	}
 
 	if sendCmd.Parsed() {
-		if "" == *from || "" == *to || 0 <= *amount {
+		if "" == *from || "" == *to || *amount <= 0 {
 			sendCmd.Usage()
 			os.Exit(1)
 		}
