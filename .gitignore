@@ -1,6 +1,6 @@
 /artifacts/
 /.states/
-hello_decert/cache/
-hello_decert/out/
-hello_decert/lib
-hello_decert/broadcast
+foundry_prj/hello_decert/cache/
+foundry_prj/hello_decert/out/
+foundry_prj/hello_decert/lib
+foundry_prj/hello_decert/broadcast

@@ -11,23 +11,4 @@ contract Counter {
     function increment() public {
         number++;
     }
-
 }
-
-// import "openzeppelin-contracts/contracts/access/Ownable.sol";
-
-// contract Counter is Ownable {
-//     uint256 public number;
-
-//     constructor(address initialOwner)Ownable(initialOwner) {
-//     }
-
-//     function setNumber(uint256 newNumber) public onlyOwner {
-//         number = newNumber;
-//     }
-
-//     function increment() public {
-//         number++;
-//     }
-
-// }
